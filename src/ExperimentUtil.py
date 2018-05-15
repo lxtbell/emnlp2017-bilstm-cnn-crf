@@ -85,3 +85,11 @@ class Params:
 
     def run_task(self, task_id):
         return task_id in self.tasks
+
+
+def print_floats(f, floats):
+    f.write("\t".join("{:.3f}".format(n) for n in floats) + "\n")
+
+
+def print_newline(f):
+    f.write("\n")

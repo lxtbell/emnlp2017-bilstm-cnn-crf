@@ -40,7 +40,7 @@ def train(data_file: str, embedding_file: str):
     with open(results_file, "r") as f:
         lines = f.readlines()
         columns = lines[-1].strip().split("\t")
-        return map(float, columns[5:8])
+        return list(map(float, columns[5:8]))
 
 
 def train_all(data_folder: str, report_file: str, embedding_file: str = 'komninos_english_embeddings.gz', processes: int = 1):
@@ -50,17 +50,20 @@ def train_all(data_folder: str, report_file: str, embedding_file: str = 'komnino
         results = list(itertools.starmap(train, works))
     else:
         with multiprocessing.Pool(processes=processes) as pool:
-            results = pool.starmap(train, works)
+            results = list(pool.starmap(train, works))
 
     results = np.array(results)
+    avg = np.mean(results, axis=0)
+    std = np.std(results, axis=0)
+
     REPORT_DIRECTORY.mkdir(parents=True, exist_ok=True)
     with REPORT_DIRECTORY.joinpath(report_file).open("w") as f:
         f.write("P\tR\tF1\n")
-        f.write("\t".join(np.mean(results, axis=0)) + "\n")
-        f.write("\t".join(np.std(results, axis=0)) + "\n")
-        f.write("\n")
+        Util.print_floats(f, avg * 100)
+        Util.print_floats(f, std * 100)
+        Util.print_newline(f)
         for result in results:
-            f.write("\t".join(result) + "\n")
+            Util.print_floats(f, result * 100)
 
 
 def main():
