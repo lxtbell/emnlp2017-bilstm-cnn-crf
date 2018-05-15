@@ -374,8 +374,8 @@ class BiLSTM:
             self.buildModel()
 
         total_train_time = 0
-        max_dev_score = {modelName:0 for modelName in self.models.keys()}
-        max_test_score = {modelName:0 for modelName in self.models.keys()}
+        max_dev_score = {modelName: -1 for modelName in self.models.keys()}
+        max_test_score = {modelName: -1 for modelName in self.models.keys()}
         max_dev_scores = {}
         max_test_scores = {}
         no_improvement_since = 0
@@ -426,7 +426,7 @@ class BiLSTM:
                 break
 
         for modelName in self.evaluateModelNames:
-            if self.resultsSavePath != None:
+            if self.resultsSavePath is not None:
                 self.resultsSavePath.write("\n")
                 self.resultsSavePath.write("\t".join(map(str, ["MAX", modelName, *max_dev_scores[modelName], *max_test_scores[modelName]])))
                 self.resultsSavePath.write("\n")
