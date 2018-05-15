@@ -1,6 +1,6 @@
 import logging
 import sys
-from pathlib import Path, PosixPath
+from pathlib import Path
 from typing import List, Any
 
 UTF_8 = "utf-8"
