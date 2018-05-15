@@ -1,5 +1,6 @@
 import itertools
 import multiprocessing
+import sys
 
 import numpy as np
 
@@ -55,20 +56,20 @@ def train_all(data_folder: str, report_file: str, embedding_file: str = 'komnino
     REPORT_DIRECTORY.mkdir(parents=True, exist_ok=True)
     with REPORT_DIRECTORY.joinpath(report_file).open("w") as f:
         f.write("P\tR\tF1\n")
-        f.write("\t".join(np.mean(results, axis=0)))
-        f.write("\n")
-        f.write("\t".join(np.std(results, axis=0)))
-        f.write("\n")
+        f.write("\t".join(np.mean(results, axis=0)) + "\n")
+        f.write("\t".join(np.std(results, axis=0)) + "\n")
         f.write("\n")
         for result in results:
-            f.write("\t".join(result))
-            f.write("\n")
+            f.write("\t".join(result) + "\n")
 
 
 def main():
-    train_all("masc-nyt/chunk", "masc-nyt.txt")
-    train_all("masc-twitter/chunk", "masc-twitter.txt")
-    train_all("ritter/chunk", "ritter.txt")
+    params = Util.Params(sys.argv)
+    num_processes = params.num_processes
+
+    train_all("masc-nyt/chunk", "masc-nyt.txt", processes=num_processes)
+    train_all("masc-twitter/chunk", "masc-twitter.txt", processes=num_processes)
+    train_all("ritter/chunk", "ritter.txt", processes=num_processes)
 
 
 if __name__ == "__main__":

@@ -75,3 +75,13 @@ def setup_logger():
         logger.addHandler(ch)
 
     return logger
+
+
+class Params:
+    def __init__(self, argv):
+        tasks = argv[1] if len(argv) > 1 else "1234567890"
+        self.tasks = set(ord(c) - ord('0') if c != '0' else 10 for c in tasks)
+        self.num_processes = int(argv[2]) if len(argv) > 2 else 1
+
+    def run_task(self, task_id):
+        return task_id in self.tasks
