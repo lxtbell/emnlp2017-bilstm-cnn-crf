@@ -376,6 +376,8 @@ class BiLSTM:
         total_train_time = 0
         max_dev_score = {modelName:0 for modelName in self.models.keys()}
         max_test_score = {modelName:0 for modelName in self.models.keys()}
+        max_dev_scores = {}
+        max_test_scores = {}
         no_improvement_since = 0
         
         for epoch in range(epochs):      
@@ -392,12 +394,14 @@ class BiLSTM:
             start_time = time.time() 
             for modelName in self.evaluateModelNames:
                 logging.info("-- %s --" % (modelName))
-                dev_score, test_score = self.computeScore(modelName, self.data[modelName]['devMatrix'], self.data[modelName]['testMatrix'])
-         
-                
+                dev_scores, test_scores = self.computeScore(modelName, self.data[modelName]['devMatrix'], self.data[modelName]['testMatrix'])
+                dev_score, test_score = dev_scores[0], test_scores[0]
+
                 if dev_score > max_dev_score[modelName]:
                     max_dev_score[modelName] = dev_score
                     max_test_score[modelName] = test_score
+                    max_dev_scores[modelName] = dev_scores
+                    max_test_scores[modelName] = test_scores
                     no_improvement_since = 0
 
                     #Save the model
@@ -408,7 +412,7 @@ class BiLSTM:
                     
                     
                 if self.resultsSavePath != None:
-                    self.resultsSavePath.write("\t".join(map(str, [epoch + 1, modelName, dev_score, test_score, max_dev_score[modelName], max_test_score[modelName]])))
+                    self.resultsSavePath.write("\t".join(map(str, [epoch + 1, modelName, *dev_scores, *test_scores])))
                     self.resultsSavePath.write("\n")
                     self.resultsSavePath.flush()
                 
@@ -420,6 +424,13 @@ class BiLSTM:
             if self.params['earlyStopping']  > 0 and no_improvement_since >= self.params['earlyStopping']:
                 logging.info("!!! Early stopping, no improvement after "+str(no_improvement_since)+" epochs !!!")
                 break
+
+        for modelName in self.evaluateModelNames:
+            if self.resultsSavePath != None:
+                self.resultsSavePath.write("\n")
+                self.resultsSavePath.write("\t".join(map(str, ["MAX", modelName, *max_dev_scores[modelName], *max_test_scores[modelName]])))
+                self.resultsSavePath.write("\n")
+                self.resultsSavePath.flush()
             
             
     def tagSentences(self, sentences):
@@ -493,7 +504,7 @@ class BiLSTM:
         test_pre, test_rec, test_f1 = self.computeF1(modelName, testMatrix)
         logging.info("Test-Data: Prec: %.3f, Rec: %.3f, F1: %.4f" % (test_pre, test_rec, test_f1))
         
-        return dev_f1, test_f1
+        return (dev_f1, dev_pre, dev_rec), (test_f1, test_pre, test_rec)
     
     def computeAccScores(self, modelName, devMatrix, testMatrix):
         dev_acc = self.computeAcc(modelName, devMatrix)
@@ -502,7 +513,7 @@ class BiLSTM:
         logging.info("Dev-Data: Accuracy: %.4f" % (dev_acc))
         logging.info("Test-Data: Accuracy: %.4f" % (test_acc))
         
-        return dev_acc, test_acc   
+        return (dev_acc,), (test_acc,)
         
         
     def computeF1(self, modelName, sentences):
