@@ -4,7 +4,7 @@ import shutil
 import ExperimentUtil as Util
 
 SOURCE_DATA_DIRECTORY = Util.get_project_folder() / "data/data"
-EXPERIMENT_DATA_DIRECTORY = Util.get_working_folder() / "data/experiment"
+EXPERIMENT_DATA_DIRECTORY = Util.get_working_folder() / "data/chunk"
 
 
 def convert_folder(source, target):
@@ -21,9 +21,9 @@ def convert_folder(source, target):
 
 
 def main():
-    convert_folder(SOURCE_DATA_DIRECTORY / "masc-twitter/pos-combined", EXPERIMENT_DATA_DIRECTORY / "masc-twitter/chunk")
-    convert_folder(SOURCE_DATA_DIRECTORY / "masc-nyt/pos-combined", EXPERIMENT_DATA_DIRECTORY / "masc-nyt/chunk")
-    convert_folder(SOURCE_DATA_DIRECTORY / "ritter/pos", EXPERIMENT_DATA_DIRECTORY / "ritter/chunk")
+    convert_folder(SOURCE_DATA_DIRECTORY / "masc-twitter/pos-combined", EXPERIMENT_DATA_DIRECTORY / "masc-twitter")
+    convert_folder(SOURCE_DATA_DIRECTORY / "masc-nyt/pos-combined", EXPERIMENT_DATA_DIRECTORY / "masc-nyt")
+    convert_folder(SOURCE_DATA_DIRECTORY / "ritter/pos", EXPERIMENT_DATA_DIRECTORY / "ritter")
 
 
 if __name__ == "__main__":

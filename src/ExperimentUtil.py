@@ -15,6 +15,10 @@ def get_working_folder():
     return Path.cwd()
 
 
+def get_working_data_folder():
+    return get_working_folder() / "data"
+
+
 def read_column_format_sentences(file: Path):
     sentences = []
     sentence = []
@@ -98,3 +102,7 @@ def print_newline(f):
 
 def replace_slash(file_name):
     return re.sub(r"[\\/]", "__", file_name)
+
+
+def relative_to(path: Path, reference: Path):
+    return str(path.relative_to(reference)).replace("\\", "/")
