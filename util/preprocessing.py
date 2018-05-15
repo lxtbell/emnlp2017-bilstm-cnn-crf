@@ -5,6 +5,7 @@ import gzip
 import os.path
 import nltk
 import logging
+import re
 from nltk import FreqDist
 
 from .WordEmbeddings import wordNormalize
@@ -32,6 +33,7 @@ def perpareDataset(embeddingsPath, datasets, frequencyThresholdUnknownTokens=50,
     """
     embeddingsName = os.path.splitext(embeddingsPath)[0]
     pklName = "_".join(sorted(datasets.keys()) + [embeddingsName])
+    pklName = re.sub(r"[\\/]", "__", pklName)
     outputPath = 'pkl/' + pklName + '.pkl'
 
     if os.path.isfile(outputPath):
@@ -56,7 +58,6 @@ def perpareDataset(embeddingsPath, datasets, frequencyThresholdUnknownTokens=50,
         logging.info(":: Transform "+datasetName+" dataset ::")
         pklObjects['data'][datasetName] = createPklFiles(paths, mappings, datasetColumns, commentSymbol, valTransformations, padOneTokenSentence)
 
-    
     f = open(outputPath, 'wb')
     pkl.dump(pklObjects, f, -1)
     f.close()
@@ -127,8 +128,7 @@ def readEmbeddings(embeddingsPath, datasetFiles, frequencyThresholdUnknownTokens
     word2Idx = {}
     embeddings = []
 
-    embeddingsIn = gzip.open(embeddingsPath, "rt") if embeddingsPath.endswith('.gz') else open(embeddingsPath,
-                                                                                               encoding="utf8")
+    embeddingsIn = gzip.open(embeddingsPath, "rt", encoding="utf8") if embeddingsPath.endswith('.gz') else open(embeddingsPath, encoding="utf8")
 
     embeddingsDimension = None
 
@@ -162,7 +162,7 @@ def readEmbeddings(embeddingsPath, datasetFiles, frequencyThresholdUnknownTokens
 
     # Extend embeddings file with new tokens
     def createFD(filename, tokenIndex, fd, word2Idx):
-        for line in open(filename):
+        for line in open(filename, encoding="utf8"):
             if line.startswith('#'):
                 continue
 

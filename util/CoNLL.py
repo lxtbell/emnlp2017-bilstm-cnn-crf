@@ -33,7 +33,7 @@ def readCoNLL(inputPath, cols, commentSymbol=None, valTransformation=None):
     
     newData = False
     
-    for line in open(inputPath):
+    for line in open(inputPath, encoding="utf8"):
         line = line.strip()
         if len(line) == 0 or (commentSymbol != None and line.startswith(commentSymbol)):
             if newData:      
