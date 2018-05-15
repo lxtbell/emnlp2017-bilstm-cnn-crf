@@ -1,4 +1,5 @@
 import logging
+import re
 import sys
 from pathlib import Path
 from typing import List, Any
@@ -93,3 +94,7 @@ def print_floats(f, floats):
 
 def print_newline(f):
     f.write("\n")
+
+
+def replace_slash(file_name):
+    return re.sub(r"[\\/]", "__", file_name)

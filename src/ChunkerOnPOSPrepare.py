@@ -21,9 +21,9 @@ def convert_folder(source, target):
 
 
 def main():
-    convert_folder(SOURCE_DATA_DIRECTORY / "masc-twitter/pos-combined/gold-pos.gold-chunk", EXPERIMENT_DATA_DIRECTORY / "masc-twitter/chunk")
-    convert_folder(SOURCE_DATA_DIRECTORY / "masc-nyt/pos-combined/gold-pos.gold-chunk", EXPERIMENT_DATA_DIRECTORY / "masc-nyt/chunk")
-    convert_folder(SOURCE_DATA_DIRECTORY / "ritter/pos/gold-pos.gold-chunk", EXPERIMENT_DATA_DIRECTORY / "ritter/chunk")
+    convert_folder(SOURCE_DATA_DIRECTORY / "masc-twitter/pos-combined", EXPERIMENT_DATA_DIRECTORY / "masc-twitter/chunk")
+    convert_folder(SOURCE_DATA_DIRECTORY / "masc-nyt/pos-combined", EXPERIMENT_DATA_DIRECTORY / "masc-nyt/chunk")
+    convert_folder(SOURCE_DATA_DIRECTORY / "ritter/pos", EXPERIMENT_DATA_DIRECTORY / "ritter/chunk")
 
 
 if __name__ == "__main__":
