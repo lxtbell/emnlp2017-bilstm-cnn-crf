@@ -22,3 +22,7 @@ data/removeComments.py
 data/conll2003_ner_german
 data/morphtag-german
 data/morphtag-latin
+
+data/experiment
+
+results
