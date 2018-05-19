@@ -34,7 +34,7 @@ def train(data_path: Path, word_embedding: WordEmbedding, char_embedding: CharEm
 
     data_set = Util.relative_to(data_path, Util.get_working_data_folder())
     instance_id = Util.relative_to(data_path, WORKING_DATA_FOLDER) + "_" + word_embedding.name + "_" + char_embedding.name
-    model_file = MODEL_FOLDER + instance_id + "_[Epoch].h5"  # "models/[ModelName]_[DevScore]_[TestScore]_[Epoch].h5"
+    model_file = MODEL_FOLDER + instance_id + ".h5"  # "models/[ModelName]_[DevScore]_[TestScore]_[Epoch].h5"
     results_file = INTERMEDIATE_REPORT_FOLDER + instance_id + ".csv"
 
     data_sets = {
