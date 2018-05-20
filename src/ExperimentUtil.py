@@ -1,8 +1,12 @@
 import logging
 import re
+import shutil
 import sys
+from enum import Enum
 from pathlib import Path
 from typing import List, Any
+
+from util.BIOF1Validation import compute_precision
 
 UTF_8 = "utf-8"
 
@@ -106,3 +110,56 @@ def replace_slash(file_name):
 
 def relative_to(path: Path, reference: Path):
     return str(path.relative_to(reference)).replace("\\", "/")
+
+
+def compute_f1(correct, predicted):
+    precision = compute_precision(predicted, correct)
+    recall = compute_precision(correct, predicted)
+    f1 = 0 if precision + recall <= 0 else 2.0 * precision * recall / (precision + recall)
+    return f1, precision, recall
+
+
+class WordEmbedding(Enum):
+    NONE = "embeddings/dummy.txt"
+    KOMNINOS = "komninos_english_embeddings.gz"
+
+
+class CharEmbedding(Enum):
+    NONE = None
+    CNN = "CNN"
+    LSTM = "LSTM"
+
+
+def relativize(folder: Path, file: Path):
+    return file.resolve().relative_to(folder.resolve())
+
+
+def rebase(old_folder: Path, new_folder: Path, file: Path):
+    return new_folder.resolve().joinpath(file.resolve().relative_to(old_folder.resolve()))
+
+
+def mkdirs_for(file: Path):
+    file.parent.mkdir(parents=True, exist_ok=True)
+
+
+def convert_folder(source, target, single_fold=False):
+    if single_fold:
+        files = sorted([str(file.relative_to(source)) for file in source.glob("**/*.conll")])
+    else:
+        files = sorted([re.sub(r"\.test$", "", str(file.relative_to(source))) for file in source.glob("**/*.test")])
+    for file in files:
+        target_folder = target.joinpath(file)
+        target_folder.mkdir(parents=True, exist_ok=True)
+
+        if not single_fold:
+            training_data = read_column_format_sentences(source.joinpath(file + ".train"))
+            training_set, dev_set = split_fold(training_data, num_folds=5)
+            write_column_format_sentences(target_folder.joinpath("train.txt"), training_set)
+            write_column_format_sentences(target_folder.joinpath("dev.txt"), dev_set)
+            shutil.copyfile(str(source.joinpath(file + ".test")), target_folder.joinpath("test.txt"))
+        else:
+            training_data = read_column_format_sentences(source.joinpath(file))
+            training_set, dev_set = split_fold(training_data, num_folds=5)
+            write_column_format_sentences(target_folder.joinpath("train.txt"), training_set)
+            write_column_format_sentences(target_folder.joinpath("dev.txt"), dev_set)
+            target_folder.joinpath("test.txt").touch()
