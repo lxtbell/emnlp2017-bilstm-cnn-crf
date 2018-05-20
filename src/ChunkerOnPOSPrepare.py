@@ -24,6 +24,8 @@ def main():
     convert_folder(SOURCE_DATA_DIRECTORY / "masc-twitter-combined", EXPERIMENT_DATA_DIRECTORY / "masc-twitter")
     convert_folder(SOURCE_DATA_DIRECTORY / "masc-nyt-combined", EXPERIMENT_DATA_DIRECTORY / "masc-nyt")
     convert_folder(SOURCE_DATA_DIRECTORY / "ritter", EXPERIMENT_DATA_DIRECTORY / "ritter")
+    convert_folder(SOURCE_DATA_DIRECTORY / "conll2000", EXPERIMENT_DATA_DIRECTORY / "conll2000")
+    convert_folder(SOURCE_DATA_DIRECTORY / "conll2003", EXPERIMENT_DATA_DIRECTORY / "conll2003")
 
 
 if __name__ == "__main__":
