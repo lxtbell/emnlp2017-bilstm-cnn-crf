@@ -70,22 +70,19 @@ def main():
     num_processes = params.num_processes
 
     if params.run_task(1):
-        train_all("masc-nyt", WordEmbedding.KOMNINOS, CharEmbedding.NONE, processes=num_processes)
-
-    if params.run_task(2):
         train_all("masc-nyt", WordEmbedding.KOMNINOS, CharEmbedding.LSTM, processes=num_processes)
 
-    if params.run_task(4):
-        train_all("masc-twitter", WordEmbedding.KOMNINOS, CharEmbedding.NONE, processes=num_processes)
-
-    if params.run_task(5):
+    if params.run_task(2):
         train_all("masc-twitter", WordEmbedding.KOMNINOS, CharEmbedding.LSTM, processes=num_processes)
 
-    if params.run_task(7):
-        train_all("ritter", WordEmbedding.KOMNINOS, CharEmbedding.NONE, processes=num_processes)
-
-    if params.run_task(8):
+    if params.run_task(3):
         train_all("ritter", WordEmbedding.KOMNINOS, CharEmbedding.LSTM, processes=num_processes)
+
+    if params.run_task(4):
+        train_all("masc-newspaper", WordEmbedding.KOMNINOS, CharEmbedding.LSTM, processes=num_processes)
+
+    if params.run_task(6):
+        train_all("conll2003", WordEmbedding.KOMNINOS, CharEmbedding.LSTM, processes=num_processes)
 
 
 if __name__ == "__main__":
