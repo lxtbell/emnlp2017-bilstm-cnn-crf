@@ -48,7 +48,7 @@ def train(data_path: Path, word_embedding: WordEmbedding, char_embedding: CharEm
     pickle_file = perpareDataset(word_embedding.value, data_sets)
 
     embeddings, mappings, data = loadDatasetPickle(pickle_file)
-    params = {'classifier': ['CRF'], 'LSTM-Size': [100, 100], 'dropout': (0.25, 0.25), 'charEmbeddings': char_embedding.value}
+    params = {'classifier': ['CRF'], 'LSTM-Size': [100, 100], 'dropout': (0.25, 0.25), 'charEmbeddings': char_embedding.value, 'featureNames': ['tokens', 'casing', 'POS']}
     model = BiLSTM(params)
     model.setMappings(mappings, embeddings)
     model.setDataset(data_sets, data)
