@@ -290,7 +290,10 @@ def createMatrices(sentences, mappings, padOneTokenSentence):
                             idx.append(str2Idx['UNKNOWN'])                           
                                       
                 else:
-                    idx = str2Idx[entry]
+                    if entry in str2Idx:
+                        idx = str2Idx[entry]
+                    else:
+                        idx = str2Idx['O']
                                     
                 row[mapping].append(idx)
                 
