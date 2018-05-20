@@ -1,32 +1,17 @@
 import itertools
 import multiprocessing
-import re
 import sys
-from collections import defaultdict
-from enum import Enum
 from pathlib import Path
 
-import numpy as np
-
 import ExperimentUtil as Util
+from ExperimentUtil import WordEmbedding, CharEmbedding
 from neuralnets.BiLSTM import BiLSTM
 from util.preprocessing import perpareDataset, loadDatasetPickle
 
 WORKING_DATA_FOLDER = Util.get_working_data_folder() / "chunk"
-MODEL_FOLDER = "models/DeepChunkerOnPOS/"
-INTERMEDIATE_REPORT_FOLDER = "results/DeepChunkerOnPOS/"
+MODEL_FOLDER = Util.get_working_folder() / "models/DeepChunkerOnPOS"
+INTERMEDIATE_REPORT_FOLDER = Util.get_working_folder() / "results/DeepChunkerOnPOS"
 REPORT_FOLDER = Util.get_project_folder() / "reports/DeepChunkerOnPOS"
-
-
-class WordEmbedding(Enum):
-    NONE = "embeddings/dummy.txt"
-    KOMNINOS = "komninos_english_embeddings.gz"
-
-
-class CharEmbedding(Enum):
-    NONE = None
-    CNN = "CNN"
-    LSTM = "LSTM"
 
 
 def train(data_path: Path, word_embedding: WordEmbedding, char_embedding: CharEmbedding):
@@ -34,8 +19,8 @@ def train(data_path: Path, word_embedding: WordEmbedding, char_embedding: CharEm
 
     data_set = Util.relative_to(data_path, Util.get_working_data_folder())
     instance_id = Util.relative_to(data_path, WORKING_DATA_FOLDER) + "_" + word_embedding.name + "_" + char_embedding.name
-    model_file = MODEL_FOLDER + instance_id + ".h5"  # "models/[ModelName]_[DevScore]_[TestScore]_[Epoch].h5"
-    results_file = INTERMEDIATE_REPORT_FOLDER + instance_id + ".csv"
+    model_file = str(MODEL_FOLDER / (instance_id + ".h5"))  # "models/[ModelName]_[DevScore]_[TestScore]_[Epoch].h5"
+    results_file = str(INTERMEDIATE_REPORT_FOLDER / (instance_id + ".csv"))
 
     data_sets = {
         data_set: {
@@ -56,7 +41,7 @@ def train(data_path: Path, word_embedding: WordEmbedding, char_embedding: CharEm
     model.modelSavePath = model_file
     model.fit(epochs=50)
 
-    with open(results_file, "r") as f:
+    with open(results_file, "r", encoding=Util.UTF_8) as f:
         lines = f.readlines()
         columns = lines[-1].strip().split("\t")
         return instance_id, list(map(float, columns[5:8]))
@@ -64,32 +49,16 @@ def train(data_path: Path, word_embedding: WordEmbedding, char_embedding: CharEm
 
 def train_all(data_folder: str, word_embedding: WordEmbedding, char_embedding: CharEmbedding, *, processes: int = 1):
     data_folder_path = WORKING_DATA_FOLDER / data_folder
-    works = [(file, word_embedding, char_embedding)
-             for file in data_folder_path.glob("**/*_fold*")]
+
+    works = [(file.parent, word_embedding, char_embedding)
+             for file in data_folder_path.glob("**/train.txt")]
     if processes <= 1:
         results = list(itertools.starmap(train, works))
     else:
         with multiprocessing.Pool(processes=processes) as pool:
             results = list(pool.starmap(train, works))
 
-    results_grouped = defaultdict(list)
-    for instance_id, file_result in results:
-        results_grouped[re.sub(r"_fold[0-9]*", "", instance_id)].append(file_result)
-
-    for file_name, file_results in results_grouped.items():
-        np_file_results = np.array(file_results)
-        avg = np.mean(np_file_results, axis=0)
-        std = np.std(np_file_results, axis=0)
-
-        report_file = REPORT_FOLDER / (file_name + ".txt")
-        report_file.parent.mkdir(parents=True, exist_ok=True)
-        with report_file.open("w") as f:
-            f.write("P\tR\tF1\n")
-            Util.print_floats(f, avg * 100)
-            Util.print_floats(f, std * 100)
-            Util.print_newline(f)
-            for result in np_file_results:
-                Util.print_floats(f, result * 100)
+    Util.print_results(results, REPORT_FOLDER)
 
 
 def main():
@@ -106,9 +75,12 @@ def main():
         train_all("ritter", WordEmbedding.KOMNINOS, CharEmbedding.LSTM, processes=num_processes)
 
     if params.run_task(4):
-        train_all("conll2000", WordEmbedding.KOMNINOS, CharEmbedding.LSTM, processes=num_processes)
+        train_all("masc-newspaper", WordEmbedding.KOMNINOS, CharEmbedding.LSTM, processes=num_processes)
 
     if params.run_task(5):
+        train_all("conll2000", WordEmbedding.KOMNINOS, CharEmbedding.LSTM, processes=num_processes)
+
+    if params.run_task(6):
         train_all("conll2003", WordEmbedding.KOMNINOS, CharEmbedding.LSTM, processes=num_processes)
 
 

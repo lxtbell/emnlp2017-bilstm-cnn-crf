@@ -1,7 +1,9 @@
 import logging
+import numpy as np
 import re
 import shutil
 import sys
+from collections import defaultdict
 from enum import Enum
 from pathlib import Path
 from typing import List, Any
@@ -163,3 +165,24 @@ def convert_folder(source, target, single_fold=False):
             write_column_format_sentences(target_folder.joinpath("train.txt"), training_set)
             write_column_format_sentences(target_folder.joinpath("dev.txt"), dev_set)
             target_folder.joinpath("test.txt").touch()
+
+
+def print_results(results, report_folder):
+    results_grouped = defaultdict(list)
+    for instance_id, file_result in results:
+        results_grouped[re.sub(r"_fold\d*", "", instance_id)].append(file_result)
+
+    for file_name, file_results in results_grouped.items():
+        np_file_results = np.array(file_results)
+        avg = np.mean(np_file_results, axis=0)
+        std = np.std(np_file_results, axis=0)
+
+        report_file = report_folder.parent / (report_folder.name + "__" + file_name + ".txt")
+        report_file.parent.mkdir(parents=True, exist_ok=True)
+        with report_file.open("w", encoding=UTF_8) as f:
+            f.write("P\tR\tF1\n")
+            print_floats(f, avg * 100)
+            print_floats(f, std * 100)
+            print_newline(f)
+            for result in np_file_results:
+                print_floats(f, result * 100)
