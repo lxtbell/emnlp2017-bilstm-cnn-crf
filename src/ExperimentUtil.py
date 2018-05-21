@@ -1,5 +1,6 @@
+import itertools
 import logging
-import numpy as np
+import multiprocessing
 import re
 import shutil
 import sys
@@ -7,6 +8,8 @@ from collections import defaultdict
 from enum import Enum
 from pathlib import Path
 from typing import List, Any
+
+import numpy as np
 
 from util.BIOF1Validation import compute_precision
 
@@ -93,6 +96,7 @@ class Params:
         tasks = argv[1] if len(argv) > 1 else "1234567890"
         self.tasks = set(ord(c) - ord('0') if c != '0' else 10 for c in tasks)
         self.num_processes = int(argv[2]) if len(argv) > 2 else 1
+        self.num_runs = int(argv[3]) if len(argv) > 3 else 1
 
     def run_task(self, task_id):
         return task_id in self.tasks
@@ -167,17 +171,26 @@ def convert_folder(source, target, single_fold=False):
             target_folder.joinpath("test.txt").touch()
 
 
-def print_results(results, report_folder):
+def train_all(train, data_folder_path: Path, model_folder_path: Path, report_folder_path: Path, run_id: int, word_embedding: WordEmbedding, char_embedding: CharEmbedding, *, processes: int = 1):
+    files = [file.parent for file in data_folder_path.glob("**/train.txt")]
+    works = [(file, rebase(data_folder_path, model_folder_path, file.with_name(file.name + "_run{}".format(run_id))), word_embedding, char_embedding)
+             for file in files]
+    if processes <= 1:
+        results = list(itertools.starmap(train, works))
+    else:
+        with multiprocessing.Pool(processes=processes) as pool:
+            results = list(pool.starmap(train, works))
+
     results_grouped = defaultdict(list)
-    for instance_id, file_result in results:
-        results_grouped[re.sub(r"_fold\d*", "", instance_id)].append(file_result)
+    for model_path, file_result in results:
+        results_grouped[re.sub(r"_fold\d*", "", relative_to(model_path, model_folder_path))].append(file_result)
 
     for file_name, file_results in results_grouped.items():
         np_file_results = np.array(file_results)
         avg = np.mean(np_file_results, axis=0)
         std = np.std(np_file_results, axis=0)
 
-        report_file = report_folder.joinpath(file_name)
+        report_file = report_folder_path.joinpath(file_name)
         report_file = report_file.parent.parent / (report_file.parent.name + "__" + report_file.name + ".txt")
         report_file.parent.mkdir(parents=True, exist_ok=True)
         with report_file.open("w", encoding=UTF_8) as f:
