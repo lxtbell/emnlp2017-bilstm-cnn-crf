@@ -54,6 +54,15 @@ def main():
     if params.run_task(1):
         run("masc-twitter", "masc-newspaper", "masc-twitter-on-newspaper-model", num_runs=num_runs, processes=num_processes)
 
+    if params.run_task(2):
+        run("masc-newspaper", "masc-newspaper", "masc-newspaper-on-newspaper-model", num_runs=num_runs, processes=num_processes)
+
+    if params.run_task(3):
+        run("masc-twitter", "masc-twitter", "masc-twitter-on-twitter-model", num_runs=num_runs, processes=num_processes)
+
+    if params.run_task(4):
+        run("ritter", "ritter", "ritter-on-ritter-model", num_runs=num_runs, processes=num_processes)
+
 
 if __name__ == "__main__":
     main()
