@@ -190,8 +190,7 @@ def train_all(train, data_folder_path: Path, model_folder_path: Path, report_fol
         avg = np.mean(np_file_results, axis=0)
         std = np.std(np_file_results, axis=0)
 
-        report_file = report_folder_path.joinpath(file_name)
-        report_file = report_file.parent.parent / (report_file.parent.name + "__" + report_file.name + ".txt")
+        report_file = report_folder_path.joinpath(file_name + ".txt")
         report_file.parent.mkdir(parents=True, exist_ok=True)
         with report_file.open("w", encoding=UTF_8) as f:
             f.write("P\tR\tF1\n")
