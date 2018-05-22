@@ -28,14 +28,23 @@ def get_working_data_folder():
     return get_working_folder() / "data"
 
 
+def file_open(file, mode="r"):
+    if isinstance(file, Path):
+        return file.open(mode, encoding=UTF_8, newline="\n")
+    elif isinstance(file, str):
+        return open(file, mode, encoding=UTF_8, newline="\n")
+    else:
+        return None
+
+
 def read_column_format_sentences(file: Path):
     sentences = []
     sentence = []
 
-    with file.open(encoding=UTF_8) as f:
+    with file_open(file) as f:
         for line in f:
             line = line.rstrip()
-            if not line:
+            if not line and sentence:
                 sentences.append(sentence)
                 sentence = []
             else:
@@ -49,7 +58,7 @@ def read_column_format_sentences(file: Path):
 def write_column_format_sentences(file: Path, sentences: List[List[str]]):
     file.parent.mkdir(parents=True, exist_ok=True)
 
-    with file.open(mode="w", encoding=UTF_8) as f:
+    with file_open(file, "w") as f:
         f.write("\n\n".join("\n".join(sentence) for sentence in sentences) + "\n\n")
 
 
@@ -171,20 +180,14 @@ def convert_folder(source, target, single_fold=False):
             target_folder.joinpath("test.txt").touch()
 
 
-def train_all(train, data_folder_path: Path, model_folder_path: Path, report_folder_path: Path, run_id: int, word_embedding: WordEmbedding, char_embedding: CharEmbedding, *, processes: int = 1):
-    files = [file.parent for file in data_folder_path.glob("**/train.txt")]
-    works = [(file, rebase(data_folder_path, model_folder_path, file.with_name(file.name + "_run{}".format(run_id))), word_embedding, char_embedding)
-             for file in files]
-    if processes <= 1:
-        results = list(itertools.starmap(train, works))
-    else:
-        with multiprocessing.Pool(processes=processes) as pool:
-            results = list(pool.starmap(train, works))
-
+def group_fold_results(results, model_folder_path: Path):
     results_grouped = defaultdict(list)
     for model_path, file_result in results:
         results_grouped[re.sub(r"_fold\d*", "", relative_to(model_path, model_folder_path))].append(file_result)
+    return results_grouped
 
+
+def print_results(results_grouped, report_folder_path: Path):
     for file_name, file_results in results_grouped.items():
         np_file_results = np.array(file_results)
         avg = np.mean(np_file_results, axis=0)
@@ -192,10 +195,38 @@ def train_all(train, data_folder_path: Path, model_folder_path: Path, report_fol
 
         report_file = report_folder_path.joinpath(file_name + ".txt")
         report_file.parent.mkdir(parents=True, exist_ok=True)
-        with report_file.open("w", encoding=UTF_8) as f:
+        with file_open(report_file, "w") as f:
             f.write("P\tR\tF1\n")
             print_floats(f, avg * 100)
             print_floats(f, std * 100)
             print_newline(f)
             for result in np_file_results:
                 print_floats(f, result * 100)
+
+
+def train_all(train, data_folder_path: Path, model_folder_path: Path, report_folder_path: Path, word_embedding: WordEmbedding, char_embedding: CharEmbedding, *, run_id: int = -1, processes: int = 1):
+    files = [file.parent for file in data_folder_path.glob("**/train.txt")]
+    works = [(file, rebase(data_folder_path, model_folder_path, file.with_name(file.name + ("_run{}".format(run_id) if run_id >= 0 else ""))), word_embedding, char_embedding)
+             for file in files]
+
+    if processes <= 1:
+        results = list(itertools.starmap(train, works))
+    else:
+        with multiprocessing.Pool(processes=processes) as pool:
+            results = list(pool.starmap(train, works))
+
+    print_results(group_fold_results(results, model_folder_path), report_folder_path)
+
+
+def evaluate_all(test, data_folder_path: Path, model_folder_path: Path, prediction_folder_path: Path, report_folder_path: Path, *, run_id: int = -1, processes: int = 1):
+    data_paths = [file for file in data_folder_path.glob("**/test.txt")]
+    model_paths = [file for file in model_folder_path.glob("**/*.h5") if re.match(r".*_fold\d*" + ("_run{}".format(run_id) if run_id >= 0 else "") + r"_KOMNINOS_LSTM", file.name)]
+    works = [(data_path, model_path, rebase(model_folder_path, prediction_folder_path, model_path)) for data_path, model_path in zip(data_paths, model_paths)]
+
+    if processes <= 1:
+        results = list(itertools.starmap(test, works))
+    else:
+        with multiprocessing.Pool(processes=processes) as pool:
+            results = list(pool.starmap(test, works))
+
+    print_results(group_fold_results(results, model_folder_path), report_folder_path)

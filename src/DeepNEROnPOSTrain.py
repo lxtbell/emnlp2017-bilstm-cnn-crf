@@ -3,12 +3,12 @@ from pathlib import Path
 
 import ExperimentUtil as Util
 from ExperimentUtil import WordEmbedding, CharEmbedding
+from NEROnPOSPrepare import WORKING_DATA_FOLDER
 from neuralnets.BiLSTM import BiLSTM
 from util.preprocessing import perpareDataset, loadDatasetPickle
 
 INTERMEDIATE_REPORT_FOLDER = Util.get_working_folder() / "results/DeepNEROnPOS"
 
-WORKING_DATA_FOLDER = Util.get_working_data_folder() / "ner"
 MODEL_FOLDER = Util.get_working_folder() / "models/DeepNEROnPOS"
 REPORT_FOLDER = Util.get_project_folder() / "reports/DeepNEROnPOS"
 
@@ -40,7 +40,7 @@ def train(data_path: Path, model_path: Path, word_embedding: WordEmbedding, char
     model.modelSavePath = model_file
     model.fit(epochs=50)
 
-    with open(results_file, "r", encoding=Util.UTF_8) as f:
+    with Util.file_open(results_file, "r") as f:
         lines = f.readlines()
         columns = lines[-1].strip().split("\t")
         return model_path, list(map(float, columns[5:8]))
@@ -48,7 +48,7 @@ def train(data_path: Path, model_path: Path, word_embedding: WordEmbedding, char
 
 def run(data_folder: str, word_embedding: WordEmbedding, char_embedding: CharEmbedding, *, num_runs: int = 1, processes: int = 1):
     for run_id in range(num_runs):
-        Util.train_all(train, WORKING_DATA_FOLDER / data_folder, MODEL_FOLDER / data_folder, REPORT_FOLDER / data_folder, run_id, word_embedding, char_embedding, processes=processes)
+        Util.train_all(train, WORKING_DATA_FOLDER / data_folder, MODEL_FOLDER / data_folder, REPORT_FOLDER / data_folder, word_embedding, char_embedding, run_id=run_id, processes=processes)
 
 
 def main():
