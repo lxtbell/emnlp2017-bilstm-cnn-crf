@@ -219,8 +219,8 @@ def train_all(train, data_folder_path: Path, model_folder_path: Path, report_fol
 
 
 def evaluate_all(test, data_folder_path: Path, model_folder_path: Path, prediction_folder_path: Path, report_folder_path: Path, *, run_id: int = -1, processes: int = 1):
-    data_paths = [file for file in data_folder_path.glob("**/test.txt")]
-    model_paths = [file for file in model_folder_path.glob("**/*.h5") if re.match(r".*_fold\d*" + ("_run{}".format(run_id) if run_id >= 0 else "") + r"_KOMNINOS_LSTM", file.name)]
+    data_paths = sorted([file for file in data_folder_path.glob("**/test.txt")])
+    model_paths = sorted([file for file in model_folder_path.glob("**/*.h5") if re.match(r".*_fold\d*" + ("_run{}".format(run_id) if run_id >= 0 else "") + r"_KOMNINOS_LSTM", file.name)])
     works = [(data_path, model_path, rebase(model_folder_path, prediction_folder_path, model_path)) for data_path, model_path in zip(data_paths, model_paths)]
 
     if processes <= 1:
