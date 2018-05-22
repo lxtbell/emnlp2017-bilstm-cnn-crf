@@ -55,6 +55,9 @@ def main():
 
     if params.run_task(4):
         run(DeepChunkerOnPOSTrain.REPORT_FOLDER / "masc-twitter-on-newspaper-model", CHUNKER_TASKS)
+        run(DeepChunkerOnPOSTrain.REPORT_FOLDER / "masc-newspaper-on-newspaper-model", CHUNKER_TASKS)
+        run(DeepChunkerOnPOSTrain.REPORT_FOLDER / "masc-twitter-on-twitter-model", CHUNKER_TASKS)
+        run(DeepChunkerOnPOSTrain.REPORT_FOLDER / "ritter-on-ritter-model", CHUNKER_TASKS)
 
     if params.run_task(6):
         run(DeepNEROnPOSTrain.REPORT_FOLDER / "masc-newspaper", NER_TASKS)
@@ -67,6 +70,9 @@ def main():
 
     if params.run_task(9):
         run(DeepNEROnPOSTrain.REPORT_FOLDER / "masc-twitter-on-newspaper-model", NER_TASKS)
+        run(DeepNEROnPOSTrain.REPORT_FOLDER / "masc-newspaper-on-newspaper-model", NER_TASKS)
+        run(DeepNEROnPOSTrain.REPORT_FOLDER / "masc-twitter-on-twitter-model", NER_TASKS)
+        run(DeepNEROnPOSTrain.REPORT_FOLDER / "ritter-on-ritter-model", NER_TASKS)
 
 
 if __name__ == "__main__":
