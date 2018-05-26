@@ -127,7 +127,7 @@ def relative_to(path: Path, reference: Path):
     return str(path.relative_to(reference)).replace("\\", "/")
 
 
-def compute_f1(correct, predicted):
+def compute_f1(predicted, correct):
     precision = compute_precision(predicted, correct)
     recall = compute_precision(correct, predicted)
     f1 = 0 if precision + recall <= 0 else 2.0 * precision * recall / (precision + recall)
