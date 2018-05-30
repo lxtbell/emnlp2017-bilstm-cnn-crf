@@ -196,7 +196,7 @@ def print_results(results_grouped, report_folder_path: Path):
         report_file = report_folder_path.joinpath(file_name + ".txt")
         report_file.parent.mkdir(parents=True, exist_ok=True)
         with file_open(report_file, "w") as f:
-            f.write("P\tR\tF1\n")
+            f.write("F1\tP\tR\n")
             print_floats(f, avg * 100)
             print_floats(f, std * 100)
             print_newline(f)
